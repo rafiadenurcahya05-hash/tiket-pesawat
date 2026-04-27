@@ -75,7 +75,7 @@ unset($_SESSION['message']);
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover transition-all border border-gray-100">
             <!-- Gambar -->
             <div class="h-48 overflow-hidden relative">
-                <img src="uploads/<?= htmlspecialchars($dest['imgUrl']) ?>" 
+                <img src="images/<?= htmlspecialchars($dest['imgUrl']) ?>" 
                      class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                      onerror="this.src='https://placehold.co/600x400?text=No+Image'">
                 <div class="absolute top-3 right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full text-sm font-bold text-yellow-600">
@@ -229,7 +229,7 @@ unset($_SESSION['message']);
         document.getElementById('edit_deskripsi').value = dest.deskripsi || '';
         const preview = document.getElementById('previewEdit');
         if (dest.imgUrl) {
-            preview.src = 'uploads/' + dest.imgUrl;
+            preview.src = 'images/' + dest.imgUrl;
             preview.classList.remove('hidden');
         } else {
             preview.classList.add('hidden');

@@ -22,13 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         "UPDATE destinasi SET nama=?, lokasi=?, provinsi=?, kategori=?, harga=?, rating=?, imgUrl=?, deskripsi=?
          WHERE id=?"
     );
-    $stmt->bind_param("ssssidss i", $nama, $lokasi, $provinsi, $kategori, $harga, $rating, $imgUrl, $deskripsi, $id);
+    // FIX: hapus spasi di format string ("ssssidss i" → "ssssidssi")
+    $stmt->bind_param("ssssidssi", $nama, $lokasi, $provinsi, $kategori, $harga, $rating, $imgUrl, $deskripsi, $id);
 
     if ($stmt->execute()) {
         $_SESSION['message']      = "Destinasi '$nama' berhasil diperbarui!";
         $_SESSION['message_type'] = 'success';
     } else {
-        $_SESSION['message']      = "Gagal memperbarui destinasi.";
+        $_SESSION['message']      = "Gagal memperbarui destinasi: " . $stmt->error;
         $_SESSION['message_type'] = 'error';
     }
 }

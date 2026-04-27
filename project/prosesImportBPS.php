@@ -33,14 +33,15 @@ $stmt = $koneksi->prepare(
 );
 
 foreach ($items as $item) {
-    $nama      = htmlspecialchars(substr($item['nama']    ?? 'Destinasi BPS', 0, 200));
-    $lokasi    = htmlspecialchars(substr($item['lokasi']  ?? '-', 0, 200));
+    $nama      = htmlspecialchars(substr($item['nama']     ?? 'Destinasi BPS', 0, 200));
+    $lokasi    = htmlspecialchars(substr($item['lokasi']   ?? '-', 0, 200));
     $provinsi  = htmlspecialchars(substr($item['provinsi'] ?? '-', 0, 100));
     $bps_id    = htmlspecialchars($item['id'] ?? '');
     $deskripsi = "Data pariwisata dari BPS – {$provinsi} (Nilai: {$item['nilai']}, Tahun: {$item['tahun']})";
     $imgFinal  = $imgUrl ?: 'https://placehold.co/600x400?text=' . urlencode($nama);
 
-    $stmt->bind_param("sssidsss s",
+    // FIX: hapus spasi di format string ("sssidsss s" → "sssidssss")
+    $stmt->bind_param("sssidssss",
         $nama, $lokasi, $provinsi,
         $harga, $rating,
         $imgFinal, $kategori,

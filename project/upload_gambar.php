@@ -1,5 +1,5 @@
 <?php
-function uploadGambar($file, $folder = "../uploads/") {
+function uploadGambar($file, $folder = "../images/") {
     $targetDir = $folder;
     if (!file_exists($targetDir)) {
         mkdir($targetDir, 0777, true);

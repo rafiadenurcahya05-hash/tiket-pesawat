@@ -8,19 +8,24 @@ if (empty($token)) {
     die("Token tidak valid.");
 }
 
-// Cek token di database
-$query = mysqli_query($koneksi, "SELECT * FROM password_resets WHERE token = '$token' AND expires_at > NOW()");
-if (mysqli_num_rows($query) == 0) {
+// FIX: pakai prepared statement (sebelumnya raw query → rentan SQL injection)
+$stmt = $koneksi->prepare("SELECT * FROM password_resets WHERE token = ? AND expires_at > NOW()");
+$stmt->bind_param("s", $token);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows == 0) {
     die("Token sudah kadaluwarsa atau tidak valid.");
 }
 
-$reset = mysqli_fetch_assoc($query);
+$reset = $result->fetch_assoc();
 $email = $reset['email'];
+$stmt->close();
 
 // Proses reset password
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_password = $_POST['password'];
-    $confirm = $_POST['confirm_password'];
+    $confirm      = $_POST['confirm_password'];
 
     if ($new_password !== $confirm) {
         $error = "Password dan konfirmasi tidak cocok.";
@@ -28,16 +33,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Password minimal 6 karakter.";
     } else {
         $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-        $update = mysqli_query($koneksi, "UPDATE users SET password = '$hashed' WHERE email = '$email'");
-        if ($update) {
+
+        // FIX: pakai prepared statement untuk update
+        $upd = $koneksi->prepare("UPDATE users SET password = ? WHERE email = ?");
+        $upd->bind_param("ss", $hashed, $email);
+
+        if ($upd->execute()) {
             // Hapus token yang sudah digunakan
-            mysqli_query($koneksi, "DELETE FROM password_resets WHERE email = '$email'");
+            $del = $koneksi->prepare("DELETE FROM password_resets WHERE email = ?");
+            $del->bind_param("s", $email);
+            $del->execute();
+            $del->close();
+
             $_SESSION['reset_success'] = "Password berhasil diubah. Silakan login.";
             header("Location: index.php");
             exit();
         } else {
             $error = "Gagal mengupdate password.";
         }
+        $upd->close();
     }
 }
 ?>
@@ -54,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 m-4">
         <h2 class="text-2xl font-bold text-center text-[#1e3c5c] mb-6">Buat Password Baru</h2>
         <?php if (isset($error)): ?>
-            <div class="bg-red-100 text-red-700 p-3 rounded mb-4"><?= $error ?></div>
+            <div class="bg-red-100 text-red-700 p-3 rounded mb-4"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
         <form method="POST">
             <div class="mb-4">
